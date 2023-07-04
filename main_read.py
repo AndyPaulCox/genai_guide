@@ -1,5 +1,6 @@
 # Import necessary modules
 import utils
+import os
 from dotenv import load_dotenv
 # Import necessary libraries
 from pathlib import Path
