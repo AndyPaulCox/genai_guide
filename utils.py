@@ -1,19 +1,14 @@
 # Import necessary libraries
 import os
 import openai
-import tiktoken
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import HuggingFaceEmbeddings
-
-# Embeddings
-
-# Function to read and chunk the contents of PDF and DOCX files in a folder
+from langchain.vectorstores import FAISS
 
 
-# Using a JSON file instead of Pandas DF
 def read_and_chunk_files_in_folder_json(f_folder_path, f_chunk_size, f_overlap):
     documents = []
     for file in os.listdir(f_folder_path):
@@ -34,20 +29,20 @@ def read_and_chunk_files_in_folder_json(f_folder_path, f_chunk_size, f_overlap):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=f_chunk_size, chunk_overlap=f_overlap)
     chunks = text_splitter.split_documents(documents)
 
-    # For each chunk, create a dictionary with file name, current date, and the text chunk
-    page_content_chunk = []
-    for chunk in chunks:
-        page_content_chunk.append(chunk.page_content)
-
-    # Loop through each index and clean the chunk and replace into the list
-    for i, chunk in enumerate(page_content_chunk):
-        # Clean the chunk and replace it in the list
-        page_content_chunk[i] = clean_text(chunk)
-
-    # Convert the documents list into a JSON object and return it
-
-    return page_content_chunk
-
+    # # For each chunk, create a dictionary with file name, current date, and the text chunk
+    # page_content_chunk = []
+    # for chunk in chunks:
+    #     page_content_chunk.append(chunk.page_content)
+    #
+    # # Loop through each index and clean the chunk and replace into the list
+    # for i, chunk in enumerate(page_content_chunk):
+    #     # Clean the chunk and replace it in the list
+    #     page_content_chunk[i] = clean_text(chunk)
+    #
+    # # Convert the documents list into a JSON object and return it
+    #
+    # return page_content_chunk
+    return chunks
 
 # The summarise_text function takes a string of text as input, uses the OpenAI
 # API to generate a summary of the text using the ChatGPT 3.5 model, and returns the summary.
@@ -83,12 +78,12 @@ def data_prep(df):
     # Loop through each row in the DataFrame
     for chunk in df:
         # Clean the text chunk
-        text = clean_text(chunk)
+        # text = clean_text(chunk)
         # Skip this iteration if the cleaned text is empty
-        if not text:
-            continue
+        # if not text:
+        #     continue
         # Summarise the text chunk
-        summary = summarise_text(text)
+        summary = summarise_text(chunk)
         # Split the summary into statements
         statements = summary.split('. ')
         # Loop through each statement
@@ -117,7 +112,6 @@ def text2_vec_database(text):
     embeddings = HuggingFaceEmbeddings()
     # Create the vectorized db
     # Vectorstore: https://python.langchain.com/en/latest/modules/indexes/vectorstores.html
-    from langchain.vectorstores import FAISS
-    db = FAISS.from_documents(docs, embeddings)
+    index = FAISS.from_texts(text, embeddings)
 
     return index
