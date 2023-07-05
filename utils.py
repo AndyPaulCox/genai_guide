@@ -2,13 +2,11 @@
 import os
 import openai
 import tiktoken
-import pinecone
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Pinecone
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings import HuggingFaceEmbeddings
 
 # Embeddings
 
@@ -115,13 +113,11 @@ def clean_text(text):
 
 
 def text2_vec_database(text):
-    embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPEANAI_API_KEY"))
-    pinecone.init(
-        api_key=os.getenv("PINECONE_API_KEY"),  # find at app.pinecone.io
-        environment=os.getenv("PINECONE_ENV")  # next to api key in console
-    )
-
-    # Backend / langchain
-    index = Pinecone.from_texts(texts=text, index_name=os.getenv("PINECONE_INDEX_NAME"), embedding=embeddings)
+    # Embeddings
+    embeddings = HuggingFaceEmbeddings()
+    # Create the vectorized db
+    # Vectorstore: https://python.langchain.com/en/latest/modules/indexes/vectorstores.html
+    from langchain.vectorstores import FAISS
+    db = FAISS.from_documents(docs, embeddings)
 
     return index

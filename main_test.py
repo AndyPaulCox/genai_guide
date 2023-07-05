@@ -9,12 +9,12 @@ from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env
 
 
-index_name = "actest-062023"
-embeddings = OpenAIEmbeddings(openai_api_key='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')
+index_name = PINECONE_INDEX_NAME
+embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 # initialize pinecone
 pinecone.init(
-    api_key='9eeb3e8e-de52-45f6-9ef4-52ebd88737ab',  # find at app.pinecone.io
-    environment='asia-southeast1-gcp-free')  # next to api key in console
+    api_key=PINECONE_API_KEY,  # find at app.pinecone.io
+    environment=PINCONE_ENV)  # next to api key in console
 
 
 doc_db = Pinecone.from_existing_index(index_name, embeddings)
