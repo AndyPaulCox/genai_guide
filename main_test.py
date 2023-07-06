@@ -1,10 +1,16 @@
 # Import necessary modules
 import utils
+import pickle
+import os
+import openai
 from dotenv import load_dotenv
 # Import necessary libraries
 from pathlib import Path
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain import PromptTemplate
+
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 # load all environment variables
 load_dotenv()
@@ -14,7 +20,7 @@ if __name__ == "__main__":
     data_folder = Path('./ref_data/')  # Replace with your data folder path
     chunk_size = 1000  # Define the size of your text chunks here
     overlap = 50  # Define the overlap between chunks here
-    use_case = "new_index"  # "existing_index" vs "new index"
+    use_case = "existing_index"  # "existing_index" vs "new index"
 
 if use_case == "new_index":
     # This function reads in pdf or word files from the input directory and converts them into
@@ -27,8 +33,14 @@ if use_case == "new_index":
     # Load the text data into Pinecone vector database for future reference
     chain = utils.text2_vec_database(sum_text_list)
 
-##########################################
+    with open('doc_embedding.pickle', 'wb') as pkl:
+        pickle.dump(chain, pkl)
 
+##########################################
+with open('doc_embedding.pickle', 'rb') as pkl:
+    chain = pickle.load(pkl)
+
+target_doc = utils.read_input_doc()
 
 llm = ChatOpenAI()
 
@@ -38,7 +50,15 @@ qa = RetrievalQA.from_chain_type(
     retriever=chain.as_retriever(),
 )
 
-query = "How should I report the numbers of individuals in the study?"
-result = qa.run(query)
+query = f"You are an expert epidemiologist. Using your context specific knowledge of the STROBE Guidelines, please discuss what elements of the guidleines are missing or require better explantion from the following completed protocol document: {target_doc}"
 
-print(result)
+response = qa.run(query)
+
+print(response)
+
+# specify the complete path
+path = "./out_data/comments.txt"
+# open file in write mode
+with open(path, 'w') as file:
+    file.write(response)
+

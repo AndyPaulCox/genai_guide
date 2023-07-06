@@ -115,3 +115,11 @@ def text2_vec_database(text):
     index = FAISS.from_texts(text, embeddings)
 
     return index
+
+def read_input_doc():
+    file = os.listdir('./in_data/')
+    doc_path = './in_data/' + file[0]
+    loader = Docx2txtLoader(doc_path)
+    doc = loader.load()
+    return doc
+
